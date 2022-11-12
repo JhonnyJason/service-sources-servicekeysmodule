@@ -6,9 +6,11 @@ import { createLogFunctions } from "thingy-debug"
 
 ############################################################
 import * as cachedData from "cached-persistentstate"
+cachedData.initialize()
 import * as secUtl from "secret-manager-crypto-utils"
 
 import * as validatableStamp from "./validatabletimestampmodule.js"
+
 
 ############################################################
 serviceState = null
@@ -56,7 +58,9 @@ export verify = (sigHex, content) ->
 
 ############################################################
 export getSignedNodeId = ->
+    log "getSignedNodeId"
     await ready
+    log "we are ready!"
     result = {}
     result.serverNodeId = serviceState.publicKeyHex
     result.timestamp = validatableStamp.create()
