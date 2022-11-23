@@ -67,3 +67,10 @@ export getSignedNodeId = ->
     content = JSON.stringify(result)
     result.signature = await sign(content)
     return result
+
+############################################################
+export getEntropySeed = (clientId) ->
+    context = "lenny test context"+validatableStamp.create()
+    seedHex = await secUtl.createSharedSecretHashHex(serviceState.secretKeyHex, clientId, context)
+    return seedHex
+
