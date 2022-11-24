@@ -70,6 +70,7 @@ export getSignedNodeId = ->
 
 ############################################################
 export getEntropySeed = (clientId) ->
+    log "getEntropySeed"
     context = "lenny test context"+validatableStamp.create()
     seedHex = await secUtl.createSharedSecretHashHex(serviceState.secretKeyHex, clientId, context)
     return seedHex
