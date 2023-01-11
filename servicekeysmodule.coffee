@@ -75,3 +75,15 @@ export getEntropySeed = (clientId) ->
     seedHex = await secUtl.createSharedSecretHashHex(serviceState.secretKeyHex, clientId, context)
     return seedHex
 
+############################################################
+export encrypt = (data) ->
+    salt = await secUtl.createRandomLengthSalt()
+    content = salt + JSON.stringify(data)
+    return await secUtl.asymmetricEncryptHex(content, serviceState.publicKeyHex)
+
+export decrypt = (secretsObj) ->
+    content = await secUtl.asymmetricDecryptHex(secretsObj, serviceState.secretKeyHex)
+    return JSON.parse(secUtl.removeSalt(content))
+
+
+
