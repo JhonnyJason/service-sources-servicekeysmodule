@@ -9,7 +9,7 @@ import * as cachedData from "cached-persistentstate"
 cachedData.initialize()
 import * as secUtl from "secret-manager-crypto-utils"
 
-import * as validatableStamp from "./validatabletimestampmodule.js"
+import * as validatableStamp from "validatabletimestamp"
 
 
 ############################################################
