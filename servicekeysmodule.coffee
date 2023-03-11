@@ -69,9 +69,10 @@ export getSignedNodeId = ->
     return result
 
 ############################################################
-export getEntropySeed = (clientId) ->
+export getEntropySeed = (clientId, specificContext, timestamp) ->
     log "getEntropySeed"
-    context = "lenny test context"+validatableStamp.create()
+    serverContext =  "thingy-rpc-post-connection"
+    context = "#{specificContext}:#{serverContext}_#{timestamp}"
     seedHex = await secUtl.createSharedSecretHashHex(serviceState.secretKeyHex, clientId, context)
     return seedHex
 
