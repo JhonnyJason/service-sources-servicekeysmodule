@@ -8,13 +8,13 @@ import { createLogFunctions } from "thingy-debug"
 import * as cachedData from "cached-persistentstate"
 cachedData.initialize()
 import * as secUtl from "secret-manager-crypto-utils"
-
 import * as validatableStamp from "validatabletimestamp"
-
+import { ThingyCryptoNode } from "./thingycryptonodemodule.js"
 
 ############################################################
 serviceState = null
 godKeyHex = null
+cryptoNode = null
 
 ############################################################
 setReady = null
@@ -32,6 +32,8 @@ export initialize = ->
         serviceState.publicKeyHex = kp.publicKeyHex
         cachedData.save("serviceState")
     
+    serviceState.context = "thingy-rpc-post-connection"
+    cryptoNode = new ThingyCryptoNode(serviceState)
     # olog serviceState
     setReady(true)
     return
@@ -40,21 +42,17 @@ export initialize = ->
 export isNotGod = (keyHex) -> return keyHex != godKeyHex
 
 ############################################################
-export getPublicKeyHex = -> serviceState.publicKeyHex
+export getPublicKeyHex = -> cryptoNode.id
 
 ############################################################
 export sign = (content) ->
     await ready
-    keyHex = serviceState.secretKeyHex
-    signatureHex = await secUtl.createSignatureHex(content, keyHex)
-    return signatureHex
+    return await cryptoNode.sign(content)
 
 ############################################################
 export verify = (sigHex, content) ->
     await ready
-    pubHex = serviceState.publicKeyHex
-    result = await secUtl.verifyHex(sigHex, pubHex, content)
-    return result
+    return await cryptoNode.verifyOwn(sigHex, content)
 
 ############################################################
 export getSignedNodeId = ->
@@ -70,21 +68,16 @@ export getSignedNodeId = ->
 
 ############################################################
 export getEntropySeed = (clientId, specificContext, timestamp) ->
-    log "getEntropySeed"
-    serverContext =  "thingy-rpc-post-connection"
-    context = "#{specificContext}:#{serverContext}_#{timestamp}"
-    seedHex = await secUtl.createSharedSecretHashHex(serviceState.secretKeyHex, clientId, context)
-    return seedHex
+    await ready
+    return await cryptoNode.diffieHellmanFor(clientId, specificContext, timestamp)
 
 ############################################################
 export encrypt = (data) ->
-    salt = await secUtl.createRandomLengthSalt()
-    content = salt + JSON.stringify(data)
-    return await secUtl.asymmetricEncryptHex(content, serviceState.publicKeyHex)
+    await ready
+    return await cryptoNode.encrypt(JSON.stringify(data))
 
 export decrypt = (secretsObj) ->
-    content = await secUtl.asymmetricDecryptHex(secretsObj, serviceState.secretKeyHex)
-    return JSON.parse(secUtl.removeSalt(content))
-
+    await ready
+    return JSON.parse(await cryptoNode.decrypt(secretsObj))
 
 
