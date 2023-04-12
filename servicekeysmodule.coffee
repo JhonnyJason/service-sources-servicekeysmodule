@@ -9,7 +9,7 @@ import * as cachedData from "cached-persistentstate"
 cachedData.initialize()
 import * as secUtl from "secret-manager-crypto-utils"
 import * as validatableStamp from "validatabletimestamp"
-import { ThingyCryptoNode } from "./thingycryptonodemodule.js"
+import { ThingyCryptoNode } from "thingy-crypto-node"
 
 ############################################################
 serviceState = null
@@ -32,8 +32,13 @@ export initialize = ->
         serviceState.publicKeyHex = kp.publicKeyHex
         cachedData.save("serviceState")
     
-    serviceState.context = "thingy-rpc-post-connection"
-    cryptoNode = new ThingyCryptoNode(serviceState)
+    ## Use CryptoNode
+    options = {
+        secretKeyHex: serviceState.secretKeyHex
+        publicKeyHex: serviceState.publicKeyHex
+        context: "thingy-rpc-post-connection"
+    }
+    cryptoNode = new ThingyCryptoNode(options)
     # olog serviceState
     setReady(true)
     return
@@ -52,7 +57,7 @@ export sign = (content) ->
 ############################################################
 export verify = (sigHex, content) ->
     await ready
-    return await cryptoNode.verifyOwn(sigHex, content)
+    return await cryptoNode.verify(sigHex, content)
 
 ############################################################
 export getSignedNodeId = ->
